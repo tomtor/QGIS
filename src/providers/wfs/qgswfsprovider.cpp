@@ -65,13 +65,7 @@ QgsWFSProvider::QgsWFSProvider( const QString& uri )
     , mFeatureCount( 0 )
     , mValid( true )
     , mCached( false )
-    , mPendingRetrieval( false )
     , mCapabilities( 0 )
-#if 0
-    , mLayer( 0 )
-    , mGetRenderedOnly( false )
-    , mInitGro( false )
-#endif
 {
   mSpatialIndex = 0;
   if ( uri.isEmpty() )
@@ -158,10 +152,6 @@ void QgsWFSProvider::reloadData()
   delete mSpatialIndex;
   mSpatialIndex = new QgsSpatialIndex();
   mValid = !getFeature( dataSourceUri() );
-
-  if ( !mCached )
-    emit dataChanged();
-  mPendingRetrieval = false;
 }
 
 void QgsWFSProvider::deleteData()
@@ -212,98 +202,13 @@ bool QgsWFSProvider::isValid()
 
 QgsFeatureIterator QgsWFSProvider::getFeatures( const QgsFeatureRequest& request )
 {
-#if 0
-  if ( !( request.flags() & QgsFeatureRequest::NoGeometry ) )
-  {
-    QgsRectangle rect = request.filterRect();
-    if ( !rect.isEmpty() )
-    {
-      QString dsURI = dataSourceUri();
-      //first time through, initialize GetRenderedOnly args
-      //ctor cannot initialize because layer object not available then
-      if ( ! mInitGro )
-      { //did user check "Cache Features" in WFS layer source selection?
-        if ( dsURI.contains( "BBOX=" ) )
-        { //no: initialize incremental getFeature
-          if ( initGetRenderedOnly( rect ) )
-          {
-            mGetRenderedOnly = true;
-          }
-          else
-          { //initialization failed;
-            QgsDebugMsg( QString( "GetRenderedOnly initialization failed; incorrect operation may occur\n%1" )
-                         .arg( dataSourceUri() ) );
-            QMessageBox( QMessageBox::Warning, "Non-Cached layer initialization failed!",
-                         QString( "Incorrect operation may occur:\n%1" ).arg( dataSourceUri() ) );
-          }
-        }
-        mInitGro = true;
-      }
-
-      if ( mGetRenderedOnly )
-      { //"Cache Features" was not selected for this layer
-        //has rendered extent expanded beyond last-retrieved WFS extent?
-        //NB: "intersect" instead of "contains" tolerates rounding errors;
-        //    avoids unnecessary second fetch on zoom-in/zoom-out sequences
-        QgsRectangle olap( rect );
-        olap = olap.intersect( &mGetExtent );
-        if ( qgsDoubleNear( rect.width(), olap.width() ) && qgsDoubleNear( rect.height(), olap.height() ) )
-        { //difference between canvas and layer extents is within rounding error: do not re-fetch
-          QgsDebugMsg( QString( "Layer %1 GetRenderedOnly: no fetch required" ).arg( mLayer->name() ) );
-        }
-        else
-        { //combined old and new extents might speed up local panning & zooming
-          mGetExtent.combineExtentWith( &rect );
-          //but see if the combination is useless or too big
-          double pArea = mGetExtent.width() * mGetExtent.height();
-          double cArea = rect.width() * rect.height();
-          if ( olap.isEmpty() || pArea > ( cArea * 4.0 ) )
-          { //new canvas extent does not overlap or combining old and new extents would
-            //fetch > 4 times the area to be rendered; get only what will be rendered
-            mGetExtent = rect;
-          }
-          QgsDebugMsg( QString( "Layer %1 GetRenderedOnly: fetching extent %2" )
-                       .arg( mLayer->name(), mGetExtent.asWktCoordinates() ) );
-          dsURI = dsURI.replace( QRegExp( "BBOX=[^&]*" ),
-                                 QString( "BBOX=%1,%2,%3,%4" )
-                                 .arg( qgsDoubleToString( mGetExtent.xMinimum() ) )
-                                 .arg( qgsDoubleToString( mGetExtent.yMinimum() ) )
-                                 .arg( qgsDoubleToString( mGetExtent.xMaximum() ) )
-                                 .arg( qgsDoubleToString( mGetExtent.yMaximum() ) ) );
-          //TODO: BBOX may not be combined with FILTER. WFS spec v. 1.1.0, sec. 14.7.3 ff.
-          //      if a FILTER is present, the BBOX must be merged into it, capabilities permitting.
-          //      Else one criterion must be abandoned and the user warned.  [WBC 111221]
-          setDataSourceUri( dsURI );
-          reloadData();
-          mLayer->updateExtents();
-        }
-      }
-    }
-
-  }
-  return new QgsWFSFeatureIterator( new QgsWFSFeatureSource( this ), true, request );
-#else
   QgsRectangle rect = request.filterRect();
   if ( !( request.flags() & QgsFeatureRequest::NoGeometry ) && !rect.isEmpty() )
   {
       deleteData();
-      mGetExtent = rect;
-
-      QString dsURI = dataSourceUri();
-      dsURI = dsURI.replace( QRegExp( "BBOX=[^&]*" ),
-                               QString( "BBOX=%1,%2,%3,%4" )
-                               .arg( qgsDoubleToString( rect.xMinimum() ) )
-                               .arg( qgsDoubleToString( rect.yMinimum() ) )
-                               .arg( qgsDoubleToString( rect.xMaximum() ) )
-                               .arg( qgsDoubleToString( rect.yMaximum() ) ) );
-      //TODO: BBOX may not be combined with FILTER. WFS spec v. 1.1.0, sec. 14.7.3 ff.
-      //      if a FILTER is present, the BBOX must be merged into it, capabilities permitting.
-      //      Else one criterion must be abandoned and the user warned.  [WBC 111221]
-      setDataSourceUri( dsURI );
       reloadData();
   }
   return new QgsWFSFeatureIterator( new QgsWFSFeatureSource( this ), true, request );
-#endif
 }
 
 int QgsWFSProvider::getFeature( const QString& uri )
@@ -1640,36 +1545,6 @@ void QgsWFSProvider::appendSupportedOperations( const QDomElement& operationsEle
   }
 }
 
-#if 0
-//initialization for getRenderedOnly option
-//(formerly "Only request features overlapping the current view extent")
-bool QgsWFSProvider::initGetRenderedOnly( const QgsRectangle &rect )
-{
-  Q_UNUSED( rect );
-
-  //find our layer
-  QMap<QString, QgsMapLayer*> layers = QgsMapLayerRegistry::instance()->mapLayers();
-  QMap<QString, QgsMapLayer*>::const_iterator layersIt = layers.begin();
-  for ( ; layersIt != layers.end() ; ++layersIt )
-  {
-    if (( mLayer = dynamic_cast<QgsVectorLayer*>( layersIt.value() ) ) )
-    {
-      if ( mLayer->dataProvider() == this )
-      {
-        QgsDebugMsg( QString( "found layer %1" ).arg( mLayer->name() ) );
-        break;
-      }
-    }
-  }
-  if ( layersIt == layers.end() )
-  {
-    QgsDebugMsg( "SHOULD NOT OCCUR: initialize() did not find layer." );
-    return false;
-  }
-  return true;
-}
-#endif
-
 QGis::WkbType QgsWFSProvider::geomTypeFromPropertyType( const QString& attName, const QString& propType )
 {
   Q_UNUSED( attName );
@@ -1741,25 +1616,7 @@ void QgsWFSProvider::extendExtent( const QgsRectangle &extent )
       && mGetExtent.contains( r ) )
     return;
 
-#if 0
-  if ( mGetExtent.isEmpty() )
-  {
-    mGetExtent = r;
-  }
-  else if ( qgsDoubleNear( mGetExtent.xMinimum(), r.xMinimum() ) &&
-            qgsDoubleNear( mGetExtent.yMinimum(), r.yMinimum() ) &&
-            qgsDoubleNear( mGetExtent.xMaximum(), r.xMaximum() ) &&
-            qgsDoubleNear( mGetExtent.yMaximum(), r.yMaximum() ) )
-  {
-    return;
-  }
-  else
-  {
-    mGetExtent.combineExtentWith( &r );
-  }
-#else
   mGetExtent = extent;
-#endif
 
   setDataSourceUri( dataSourceUri().replace( QRegExp( "BBOX=[^&]*" ),
                     QString( "BBOX=%1,%2,%3,%4" )
@@ -1768,11 +1625,8 @@ void QgsWFSProvider::extendExtent( const QgsRectangle &extent )
                           qgsDoubleToString( mGetExtent.xMaximum() ),
                           qgsDoubleToString( mGetExtent.yMaximum() ) ) ) );
 
-  if ( !mPendingRetrieval )
-  {
-    mPendingRetrieval = true;
-    QTimer::singleShot( 100, this, SLOT( reloadData() ) );
-  }
+  reloadData();
+  emit dataChanged();
 }
 
 QGISEXTERN QgsWFSProvider* classFactory( const QString *uri )

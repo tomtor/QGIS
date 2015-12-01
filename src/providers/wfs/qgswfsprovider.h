@@ -206,19 +206,10 @@ class QgsWFSProvider : public QgsVectorDataProvider
     /** Flag if provider is valid*/
     bool mValid;
     bool mCached;
-    bool mPendingRetrieval;
     /** Namespace URL of the server (comes from DescribeFeatureDocument)*/
     QString mWfsNamespace;
     /** Server capabilities for this layer (generated from capabilities document)*/
     int mCapabilities;
-#if 0
-    /** GetRenderedOnly: layer asociated with this provider*/
-    QgsVectorLayer *mLayer;
-    /** GetRenderedOnly: fetch only features within canvas extent to be rendered*/
-    bool mGetRenderedOnly;
-    /** GetRenderedOnly initializaiton flat*/
-    bool mInitGro;
-#endif
     /** If GetRenderedOnly, extent specified in WFS getFeatures; else empty (no constraint)*/
     QgsRectangle mGetExtent;
 
@@ -280,10 +271,7 @@ class QgsWFSProvider : public QgsVectorDataProvider
     void appendSupportedOperations( const QDomElement& operationsElem, int& capabilities ) const;
     /** Records provider error*/
     void handleException( const QDomDocument& serverResponse );
-#if 0
-    /** Initializes "Cache Features" inactive processing*/
-    bool initGetRenderedOnly( const QgsRectangle &rect );
-#endif
+
     /** Converts DescribeFeatureType schema geometry property type to WKBType*/
     QGis::WkbType geomTypeFromPropertyType( const QString& attName, const QString& propType );
 
