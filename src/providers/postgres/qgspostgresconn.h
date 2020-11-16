@@ -188,6 +188,15 @@ class QgsPostgresResult
 
 };
 
+class PoolPostgresConn
+{
+    class QgsPostgresConn *mPgConn;
+  public:
+    PoolPostgresConn( const QString &connInfo );
+    ~PoolPostgresConn();
+
+    class QgsPostgresConn *get() { return mPgConn; }
+};
 
 class QgsPostgresConn : public QObject
 {
