@@ -198,7 +198,7 @@ QList<QVariantList> QgsPostgresProviderConnection::executeSql( const QString &sq
   return executeSqlPrivate( sql, true, feedback );
 }
 
-QList<QVariantList> QgsPostgresProviderConnection::executeSqlPrivate( const QString &sql, bool resolveTypes, QgsFeedback *feedback, std::shared_ptr<PoolPostgresConn> pgconn ) const
+QList<QVariantList> QgsPostgresProviderConnection::executeSqlPrivate( const QString &sql, bool resolveTypes, QgsFeedback *feedback, std::shared_ptr<QgsPoolPostgresConn> pgconn ) const
 {
   QList<QVariantList> results;
 
@@ -208,11 +208,10 @@ QList<QVariantList> QgsPostgresProviderConnection::executeSqlPrivate( const QStr
     return results;
   }
 
-  const QgsDataSourceUri dsUri { uri() };
   if ( ! pgconn )
-    pgconn = std::shared_ptr<PoolPostgresConn>( new PoolPostgresConn( dsUri.connectionInfo( false ) ) );
-  auto conn = pgconn->get();
-  if ( !conn )
+    pgconn = std::shared_ptr<QgsPoolPostgresConn>( new QgsPoolPostgresConn( QgsDataSourceUri( uri() ).connectionInfo( false ) ) );
+  QgsPostgresConn *conn = pgconn->get();
+  if ( ! conn )
   {
     throw QgsProviderConnectionException( QObject::tr( "Connection failed: %1" ).arg( uri() ) );
   }

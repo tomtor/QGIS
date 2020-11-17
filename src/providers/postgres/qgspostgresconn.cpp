@@ -143,12 +143,12 @@ Oid QgsPostgresResult::PQoidValue()
   return ::PQoidValue( mRes );
 }
 
-PoolPostgresConn::PoolPostgresConn( const QString &connInfo )
+QgsPoolPostgresConn::QgsPoolPostgresConn( const QString &connInfo )
   : mPgConn( QgsPostgresConnPool::instance()->acquireConnection( connInfo ) )
 {
 }
 
-PoolPostgresConn::~PoolPostgresConn()
+QgsPoolPostgresConn::~QgsPoolPostgresConn()
 {
   if ( mPgConn )
     QgsPostgresConnPool::instance()->releaseConnection( mPgConn );
