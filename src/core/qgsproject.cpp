@@ -1627,7 +1627,10 @@ bool QgsProject::readProjectFile( const QString &filename, QgsProject::ReadFlags
   // After bad layer handling we might still have invalid layers,
   // store them in case the user wanted to handle them later
   // or wanted to pass them through when saving
-  QgsLayerTreeUtils::storeOriginalLayersProperties( mRootGroup, doc.get() );
+  if ( !( flags & QgsProject::ReadFlag::FlagDontStoreOriginalStyles ) )
+  {
+    QgsLayerTreeUtils::storeOriginalLayersProperties( mRootGroup, doc.get() );
+  }
 
   mRootGroup->removeCustomProperty( QStringLiteral( "loading" ) );
 
@@ -2001,7 +2004,7 @@ void QgsProject::onMapLayersAdded( const QList<QgsMapLayer *> &layers )
       connect( layer, &QgsMapLayer::configChanged, this, [ = ] { setDirty(); } );
 
       // check if we have to update connections for layers with dependencies
-      for ( QMap<QString, QgsMapLayer *>::iterator it = existingMaps.begin(); it != existingMaps.end(); ++it )
+      for ( QMap<QString, QgsMapLayer *>::const_iterator it = existingMaps.cbegin(); it != existingMaps.cend(); ++it )
       {
         QSet<QgsMapLayerDependency> deps = it.value()->dependencies();
         if ( deps.contains( layer->id() ) )

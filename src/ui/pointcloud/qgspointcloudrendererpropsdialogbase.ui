@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>371</width>
+    <width>374</width>
     <height>501</height>
    </rect>
   </property>
@@ -91,9 +91,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QgsCollapsibleGroupBox" name="mLayerRenderingGroupBox">
+          <widget class="QGroupBox" name="mLayerRenderingGroupBox_2">
            <property name="title">
-            <string>Layer Rendering</string>
+            <string>Point Symbol</string>
            </property>
            <property name="flat">
             <bool>true</bool>
@@ -101,10 +101,65 @@
            <property name="checkable">
             <bool>false</bool>
            </property>
-           <property name="collapsed" stdset="0">
+           <layout class="QGridLayout" name="gridLayout_2">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>3</number>
+            </property>
+            <item row="0" column="3">
+             <widget class="QgsUnitSelectionWidget" name="mPointSizeUnitWidget">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1" colspan="2">
+             <widget class="QgsDoubleSpinBox" name="mPointSizeSpinBox">
+              <property name="decimals">
+               <number>6</number>
+              </property>
+              <property name="maximum">
+               <double>99999999999.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblTransparency_4">
+              <property name="text">
+               <string>Point size</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Style</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1" colspan="3">
+             <widget class="QComboBox" name="mPointStyleComboBox"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="mLayerRenderingGroupBox">
+           <property name="title">
+            <string>Layer Rendering</string>
+           </property>
+           <property name="flat">
             <bool>true</bool>
            </property>
-           <property name="saveCollapsedState" stdset="0">
+           <property name="checkable">
             <bool>false</bool>
            </property>
            <layout class="QGridLayout" name="gridLayout">
@@ -136,6 +191,9 @@
               <property name="maximum">
                <double>99999999999.000000000000000</double>
               </property>
+              <property name="value">
+               <double>1.000000000000000</double>
+              </property>
              </widget>
             </item>
             <item row="0" column="0">
@@ -146,7 +204,7 @@
              </widget>
             </item>
             <item row="0" column="3">
-             <widget class="QgsUnitSelectionWidget" name="mMaxErrorUnitWidget" native="true">
+             <widget class="QgsUnitSelectionWidget" name="mMaxErrorUnitWidget">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -188,14 +246,19 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>QgsDoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>qgsdoublespinbox.h</header>
+  </customwidget>
+  <customwidget>
    <class>QgsBlendModeComboBox</class>
    <extends>QComboBox</extends>
    <header>qgsblendmodecombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>QgsCollapsibleGroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>qgscollapsiblegroupbox.h</header>
+   <class>QgsUnitSelectionWidget</class>
+   <extends>QComboBox</extends>
+   <header>qgsunitselectionwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -208,17 +271,6 @@
    <class>QgsPanelWidget</class>
    <extends>QWidget</extends>
    <header>qgspanelwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QgsDoubleSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
-   <header>qgsdoublespinbox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QgsUnitSelectionWidget</class>
-   <extends>QWidget</extends>
-   <header>qgsunitselectionwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

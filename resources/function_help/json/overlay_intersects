@@ -2,7 +2,7 @@
   "name": "overlay_intersects",
   "type": "function",
   "groups": ["GeometryGroup"],
-  "description": "Returns whether the current feature spatially intersects at least one feature from a target layer, or an array of expression-based results for the features in the target layer intersected by the current feature.<br><br>Read more on the underlying GEOS \"Intersects\" predicate, as described in PostGIS <a href='https://postgis.net/docs/ST_Intersects.html'>ST_INTERSECTS</a> function.",
+  "description": "Returns whether the current feature spatially intersects at least one feature from a target layer, or an array of expression-based results for the features in the target layer intersected by the current feature.<br><br>Read more on the underlying GEOS \"Intersects\" predicate, as described in PostGIS <a href='https://postgis.net/docs/ST_Intersects.html'>ST_Intersects</a> function.",
   "arguments": [
     {
       "arg": "layer",
@@ -42,6 +42,10 @@
     {
       "expression": "overlay_intersects('regions', name)",
       "returns": "an array of names, for the regions intersected by the current feature"
+    },
+    {
+      "expression": "array_to_string(overlay_intersects('regions', name))",
+      "returns": "a string as a comma separated list of names, for the regions intersected by the current feature"
     },
     {
       "expression": "array_sort(overlay_intersects(layer:='regions', expression:=\"name\", filter:= population > 10000))",

@@ -21,6 +21,9 @@
 #include "ui_qgspointcloudlayerpropertiesbase.h"
 
 #include "qgsmaplayerstylemanager.h"
+#include <QAbstractTableModel>
+
+#include "qgspointcloudlayer.h"
 
 class QgsMapLayer;
 class QgsMapCanvas;
@@ -30,11 +33,67 @@ class QgsMetadataWidget;
 class QgsMapLayerConfigWidgetFactory;
 class QgsMapLayerConfigWidget;
 
+
+class QgsPointCloudAttributeStatisticsModel : public QAbstractTableModel
+{
+    Q_OBJECT
+
+  public:
+
+    enum Columns
+    {
+      Name,
+      Min,
+      Max,
+      Mean,
+      StDev
+    };
+
+    QgsPointCloudAttributeStatisticsModel( QgsPointCloudLayer *layer, QObject *parent );
+    int columnCount( const QModelIndex &parent = QModelIndex() ) const override;
+    int rowCount( const QModelIndex &parent = QModelIndex() ) const override;
+    QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
+    QVariant headerData( int section, Qt::Orientation orientation,
+                         int role = Qt::DisplayRole ) const override;
+  private:
+
+    QgsPointCloudLayer *mLayer = nullptr;
+    QgsPointCloudAttributeCollection mAttributes;
+};
+
+class QgsPointCloudClassificationStatisticsModel : public QAbstractTableModel
+{
+    Q_OBJECT
+
+  public:
+
+    enum Columns
+    {
+      Value,
+      Classification,
+      Count,
+      Percent
+    };
+
+    QgsPointCloudClassificationStatisticsModel( QgsPointCloudLayer *layer, const QString &attribute, QObject *parent );
+    int columnCount( const QModelIndex &parent = QModelIndex() ) const override;
+    int rowCount( const QModelIndex &parent = QModelIndex() ) const override;
+    QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
+    QVariant headerData( int section, Qt::Orientation orientation,
+                         int role = Qt::DisplayRole ) const override;
+  private:
+
+    QgsPointCloudLayer *mLayer = nullptr;
+    QString mAttribute;
+    QVariantList mClassifications;
+};
+
 class QgsPointCloudLayerProperties : public QgsOptionsDialogBase, private Ui::QgsPointCloudLayerPropertiesBase
 {
     Q_OBJECT
   public:
     QgsPointCloudLayerProperties( QgsPointCloudLayer *lyr, QgsMapCanvas *canvas, QgsMessageBar *messageBar, QWidget *parent = nullptr, Qt::WindowFlags = QgsGuiUtils::ModalDialogFlags );
+
 
     void addPropertiesPageFactory( QgsMapLayerConfigWidgetFactory *factory );
 

@@ -22,7 +22,7 @@
 #include "qgis_core.h"
 #include "qgis_sip.h"
 
-class QgsContrastEnhancement;
+#include "qgscontrastenhancement.h"
 
 /**
  * \ingroup core
@@ -43,20 +43,12 @@ class CORE_EXPORT QgsPointCloudRgbRenderer : public QgsPointCloudRenderer
     QgsPointCloudRenderer *clone() const override;
     void renderBlock( const QgsPointCloudBlock *block, QgsPointCloudRenderContext &context ) override;
     QDomElement save( QDomDocument &doc, const QgsReadWriteContext &context ) const override;
-    void startRender( QgsPointCloudRenderContext &context ) override;
-    void stopRender( QgsPointCloudRenderContext &context ) override;
     QSet< QString > usedAttributes( const QgsPointCloudRenderContext &context ) const override;
 
     /**
      * Creates an RGB renderer from an XML \a element.
      */
     static QgsPointCloudRenderer *create( QDomElement &element, const QgsReadWriteContext &context ) SIP_FACTORY;
-
-    //! Returns pen width
-    int penWidth() const;
-
-    //! Sets pen width
-    void setPenWidth( int value );
 
     /**
      * Returns the attribute to use for the red channel.
@@ -173,9 +165,6 @@ class CORE_EXPORT QgsPointCloudRgbRenderer : public QgsPointCloudRenderer
     void setBlueContrastEnhancement( QgsContrastEnhancement *enhancement SIP_TRANSFER );
 
   private:
-
-    int mPenWidth = 1;
-    int mPainterPenWidth = 1;
 
     QString mRedAttribute = QStringLiteral( "Red" );
     QString mGreenAttribute = QStringLiteral( "Green" );

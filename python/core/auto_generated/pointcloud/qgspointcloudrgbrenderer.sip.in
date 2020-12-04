@@ -36,26 +36,12 @@ Constructor for QgsPointCloudRgbRenderer.
 
     virtual QDomElement save( QDomDocument &doc, const QgsReadWriteContext &context ) const;
 
-    virtual void startRender( QgsPointCloudRenderContext &context );
-
-    virtual void stopRender( QgsPointCloudRenderContext &context );
-
     virtual QSet< QString > usedAttributes( const QgsPointCloudRenderContext &context ) const;
 
 
     static QgsPointCloudRenderer *create( QDomElement &element, const QgsReadWriteContext &context ) /Factory/;
 %Docstring
 Creates an RGB renderer from an XML ``element``.
-%End
-
-    int penWidth() const;
-%Docstring
-Returns pen width
-%End
-
-    void setPenWidth( int value );
-%Docstring
-Sets pen width
 %End
 
     QString redAttribute() const;
